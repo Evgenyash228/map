@@ -34,6 +34,7 @@ running = True
 
 pygame.display.flip()
 while running:
+    print(z)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -47,6 +48,23 @@ while running:
                 if z >= 1:
                     z -= 1
                     pg_pic = get_pic(coords, z)
+            if event.type == pygame.KEYDOWN:
+                if event.key == 1073741904:
+                    if not int(coords[0]) <= -170:
+                        coords[0] = int(coords[0]) - 18 + z
+                        pg_pic = get_pic(coords, z)
+                if event.key == 1073741906:
+                    if not int(coords[1]) >= 70:
+                        coords[1] = int(coords[1]) + 18 - z
+                        pg_pic = get_pic(coords, z)
+                if event.key == 1073741905:
+                    if not int(coords[1]) <= -70:
+                        coords[1] = int(coords[1]) - 18 + z
+                        pg_pic = get_pic(coords, z)
+                if event.key == 1073741903:
+                    if not int(coords[0]) >= 170:
+                        coords[0] = int(coords[0]) + 18 - z
+                        pg_pic = get_pic(coords, z)
     screen.blit(pg_pic, (0, 0))
     pygame.display.flip()
 pygame.quit()
