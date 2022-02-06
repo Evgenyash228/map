@@ -9,9 +9,19 @@ from io import BytesIO
 xp = 0.002
 yp = 0.002
 
-def get_pic(coords=[0, 0], z=1):
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    # если файл не существует, то выходим
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
+
+
+def get_pic(coords=[0, 0], z=1, l="map"):
     map_params = {
-        "l": "map",
+        "l": chose_map[l],
         "size": "650,450",
         "ll": ",".join(map(str, coords)),
         "z": str(z)
@@ -24,10 +34,14 @@ def get_pic(coords=[0, 0], z=1):
         sys.exit(1)
     return pygame.image.load(BytesIO(response.content))
 
+button = load_image("button.png")
 
 z = 1
 coords = [0, 0]
-pg_pic = get_pic(coords, z)
+global chose_map
+chose_map = ["map", "sat", "sat,skl"]
+ll = 0
+pg_pic = get_pic(coords, z, ll)
 
 pygame.init()
 pygame.display.set_caption('Карта')
@@ -67,38 +81,54 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            if (x > 10 and x < 110) and (y > 390 and x < 440):
+                if ll < 2:
+                    ll += 1
+                else:
+                    ll = 0
+                pg_pic = get_pic(coords, z, ll)
+
         if event.type == pygame.KEYDOWN:
+
             if event.key == pygame.K_PAGEUP:
                 if z <= 16:
                     z += 1
-                    pg_pic = get_pic(coords, z)
+                    pg_pic = get_pic(coords, z, ll)
             if event.key == pygame.K_PAGEDOWN:
                 if z >= 1:
                     z -= 1
-                    pg_pic = get_pic(coords, z)
+                    pg_pic = get_pic(coords, z, ll)
+
             if event.type == pygame.KEYDOWN:
                 if event.key == 1073741904:
                     if not int(coords[0]) - provershit_dlini < -170:
                         coords[0] -= provershit_dlini
-                        pg_pic = get_pic(coords, z)
+                        pg_pic = get_pic(coords, z, ll)
                     else:
                         coords[0] = -170
+
                 if event.key == 1073741906:
                     if not int(coords[1]) + provershit_visoti > 70:
                         coords[1] += provershit_visoti
-                        pg_pic = get_pic(coords, z)
+                        pg_pic = get_pic(coords, z, ll)
                     else:
                         coords[1] = 70
+
                 if event.key == 1073741905:
                     if not int(coords[1]) - provershit_visoti < -70:
                         coords[1] -= provershit_visoti
-                        pg_pic = get_pic(coords, z)
+                        pg_pic = get_pic(coords, z, ll)
+
                 if event.key == 1073741903:
                     if not int(coords[0]) + provershit_dlini > 170:
                         coords[0] += provershit_dlini
-                        pg_pic = get_pic(coords, z)
+                        pg_pic = get_pic(coords, z, ll)
                     else:
                         coords[0] = 170
+
     screen.blit(pg_pic, (0, 0))
+    screen.blit(button, (10, 390))
     pygame.display.flip()
 pygame.quit()
