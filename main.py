@@ -10,10 +10,29 @@ xp = 0.002
 yp = 0.002
 vvedenie = pygame.Rect(0, 0, 140, 32)
 sbros = pygame.Rect(0, 34, 70, 32)
+index_show = pygame.Rect(600, 30, 50, 30)
+index_pokazivatel = pygame.Rect(75, 32, 240, 34)
+index_provershit = False
+adresos = ''
 pt = [1, 1]
 pygame.init()
 sbros_provershit = False
 fl_adrss = ''
+
+
+def poisk_indexa(adres):
+    try:
+        geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={adres}&format=json"
+        response = requests.get(geocoder_request)
+        if response:
+            json_response = response.json()
+            toponym1 = \
+            json_response['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty'][
+                'GeocoderMetaData']['Address']['postal_code']
+            return toponym1
+        return 'Конкретнее пожалуйста'
+    except Exception:
+        return 'у этого адреса нет индекса'
 
 def full_adress(adress):
     geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={adress}&format=json"
@@ -38,13 +57,11 @@ def poisk(s='Хабаровск'):
         json_response["response"]['GeoObjectCollection']['featureMember'][-1]['GeoObject']['boundedBy']['Envelope'][
             'upperCorner']
         return (json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]['Point']['pos'].split())
-print(poisk())
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
     if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
     image = pygame.image.load(fullname)
     return image
@@ -64,10 +81,7 @@ def get_pic(coords=[0, 0], z=1, l="map", resp='https://static-maps.yandex.ru/1.x
         if 'pt' in map_params.keys():
             del map_params['pt']
     response = requests.get(resp, map_params)
-    print(map_params, response)
     if not response:
-        print("Ошибка выполнения запроса:")
-        print("Http статус:", response.status_code, "(", response.reason, ")")
         sys.exit(1)
     return pygame.image.load(BytesIO(response.content))
 
@@ -99,6 +113,7 @@ pygame.display.set_caption('Карта')
 screen = pygame.display.set_mode((650, 450))
 zapret = [13, 9, 8, 1073741912, 27]
 font = pygame.font.Font(None, 32)
+font2 = pygame.font.Font(None, 20)
 running = True
 vvedenie_chek = False
 pygame.display.flip()
@@ -135,6 +150,12 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
+            if 599 < x < 650 and 30 <= y <= 60:
+                if not index_provershit:
+                    index_provershit = True
+                else:
+                    index_provershit = False
+
             if (x > 10 and x < 110) and (y > 390 and x < 440):
                 if ll < 2:
                     ll += 1
@@ -153,6 +174,7 @@ while running:
                 pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', [1, 1])
                 fl_adrss = ''
                 vvedenie[2] = 140
+                adresos = ''
         if event.type == pygame.KEYDOWN:
             if vvedenie_chek:
                 if not int(event.key) in zapret and not event.unicode == '':
@@ -164,6 +186,7 @@ while running:
                     sbros_provershit = True
                     adres = ''.join(vvodimiy_text)
                     print(poisk(adres))
+                    adresos = poisk_indexa(adres)
                     coords = [poisk(adres)[0], poisk(adres)[1]]
                     pt = [poisk(adres)[0], poisk(adres)[1]]
                     pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
@@ -206,12 +229,26 @@ while running:
                 else:
                     coords[0] = 170
     vivodimiy_text = font.render(''.join(vvodimiy_text), True, 'black')
+    if not index_provershit:
+        pogazivat_index_text = font.render('Показывать Индекс: OFF', True, 'black')
+    else:
+        pogazivat_index_text = font.render('Показывать Индекс: ON', True, 'black')
     sbros_text = font.render('Сброс', True, 'black')
+    index_nadpis = font2.render('Индекс: ' + str(adresos), True, 'black')
     screen.blit(pg_pic, (0, 0))
     screen.blit(vivodimiy_text, (3, 4))
     screen.blit(button, (10, 390))
     draw(screen, vvedenie[2], fl_adrss)
 
+    if index_provershit:
+        pygame.draw.rect(screen, 'green', index_show)
+        screen.blit(pogazivat_index_text, (370, 30))
+        pygame.draw.rect(screen, 'blue', index_pokazivatel, 1)
+        screen.blit(index_nadpis, (78, 45))
+
+    else:
+        pygame.draw.rect(screen, 'red', index_show)
+        screen.blit(pogazivat_index_text, (370, 30))
     if len(vvodimiy_text) > 10:
         vvedenie[2] = (140 / 10) * len(vvodimiy_text)
     if vvedenie_chek == False:
