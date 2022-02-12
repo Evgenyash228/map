@@ -13,6 +13,18 @@ sbros = pygame.Rect(0, 34, 70, 32)
 pt = [1, 1]
 pygame.init()
 sbros_provershit = False
+fl_adrss = ''
+
+def full_adress(adress):
+    geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={adress}&format=json"
+    response = requests.get(geocoder_request)
+    if response:
+        json_response = response.json()
+        toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        toponym_address = toponym["metaDataProperty"]["GeocoderMetaData"]["text"]
+        return toponym_address
+    else:
+        return "err"
 
 def poisk(s='Хабаровск'):
     geocoder_request = f"http://geocode-maps.yandex.ru/1.x/?apikey=40d1649f-0493-4b70-98ba-98533de7710b&geocode={s}&format=json"
@@ -59,6 +71,18 @@ def get_pic(coords=[0, 0], z=1, l="map", resp='https://static-maps.yandex.ru/1.x
         sys.exit(1)
     return pygame.image.load(BytesIO(response.content))
 
+
+def draw(screen, v, text=""):
+    font = pygame.font.Font(None, 20)
+    text_n = text
+    text = font.render(f"Полный адресс: {text}", True, (0, 0, 0))
+    text_x = v + 15
+    text_y = 10
+    text_w = text.get_width()
+    text_h = text.get_height()
+    screen.blit(text, (text_x, text_y))
+    pygame.draw.rect(screen, (0, 0, 255), (text_x - 10, text_y - 10,
+                                           text_w + 20, text_h + 20), 1)
 button = load_image("button.png")
 
 
@@ -127,6 +151,8 @@ while running:
                 sbros_provershit = False
                 pt = [1, 1]
                 pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', [1, 1])
+                fl_adrss = ''
+                vvedenie[2] = 140
         if event.type == pygame.KEYDOWN:
             if vvedenie_chek:
                 if not int(event.key) in zapret and not event.unicode == '':
@@ -143,6 +169,8 @@ while running:
                     pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
                     vvedenie_chek = False
                     vvodimiy_text = []
+                    fl_adrss = full_adress(adres)
+                    vvedenie[2] = 140
             if event.key == pygame.K_PAGEUP:
                 if z <= 16:
                     z += 1
@@ -182,6 +210,7 @@ while running:
     screen.blit(pg_pic, (0, 0))
     screen.blit(vivodimiy_text, (3, 4))
     screen.blit(button, (10, 390))
+    draw(screen, vvedenie[2], fl_adrss)
 
     if len(vvodimiy_text) > 10:
         vvedenie[2] = (140 / 10) * len(vvodimiy_text)
