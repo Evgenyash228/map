@@ -99,25 +99,32 @@ def draw(screen, v, text=""):
                                            text_w + 20, text_h + 20), 1)
 button = load_image("button.png")
 
-
 z = 1
 coords = [0, 0]
 vvodimiy_text = []
-respo = ''
+
 global chose_map
 chose_map = ["map", "sat", "sat,skl"]
 ll = 0
+
 pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
+
 pygame.init()
 pygame.display.set_caption('Карта')
 screen = pygame.display.set_mode((650, 450))
+
 zapret = [13, 9, 8, 1073741912, 27]
+
 font = pygame.font.Font(None, 32)
 font2 = pygame.font.Font(None, 20)
+
 running = True
 vvedenie_chek = False
+
 pygame.display.flip()
+
 while running:
+
     if z == 1:
         provershit_visoti = 70
         provershit_dlini = 170
@@ -142,32 +149,39 @@ while running:
         for i in range(z - 6):
             provershit_visoti /= 2
             provershit_dlini /= 2
-    #if z == 7
-    #print(z)
+
+
     for event in pygame.event.get():
-        #print(provershit_visoti, provershit_visoti)
         if event.type == pygame.QUIT:
             running = False
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
+
             if 599 < x < 650 and 30 <= y <= 60:
+
                 if not index_provershit:
                     index_provershit = True
                 else:
                     index_provershit = False
 
             if (x > 10 and x < 110) and (y > 390 and x < 440):
+
                 if ll < 2:
                     ll += 1
                 else:
                     ll = 0
+
                 pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
+
             if vvedenie.collidepoint(event.pos):
+
                 if vvedenie_chek == True:
                     vvedenie_chek = False
                     vvodimiy_text = []
                 else:
                     vvedenie_chek = True
+
             if sbros.collidepoint(event.pos) and sbros_provershit:
                 sbros_provershit = False
                 pt = [1, 1]
@@ -175,13 +189,36 @@ while running:
                 fl_adrss = ''
                 vvedenie[2] = 140
                 adresos = ''
+
+            if event.button == 1 and not(599 < x < 650 and 30 <= y <= 60) and not((x > 10 and x < 110) and (y > 390 and x < 440)) and not(vvedenie.collidepoint(event.pos)):
+                sbros_provershit = False
+                pt = [1, 1]
+                pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', [1, 1])
+                fl_adrss = ''
+                vvedenie[2] = 140
+                adresos = ''
+                vvodimiy_text = []
+                vvedenie[2] = 140
+
+                sbros_provershit = True
+                pt = [(x * 360 / 650) - 180, -((y * 180 / 450) - 90)]
+                print(pt)
+                pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
+                sbros_provershit = False
+
+
+
         if event.type == pygame.KEYDOWN:
+
             if vvedenie_chek:
+
                 if not int(event.key) in zapret and not event.unicode == '':
                     vvodimiy_text.append(str(event.unicode))
                 #print(vvodimiy_text, event.key)
+
                 if len(vvodimiy_text) and event.key == 8:
                     vvodimiy_text = vvodimiy_text[:-1]
+
                 if event.key == 13:
                     sbros_provershit = True
                     adres = ''.join(vvodimiy_text)
@@ -194,45 +231,62 @@ while running:
                     vvodimiy_text = []
                     fl_adrss = full_adress(adres)
                     vvedenie[2] = 140
+
+
+
             if event.key == pygame.K_PAGEUP:
+
                 if z <= 16:
                     z += 1
                     pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
+
             if event.key == pygame.K_PAGEDOWN:
+
                 if z >= 1:
                     z -= 1
                     pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
+
             if event.key == 1073741904:
+
                 if not float(coords[0]) - provershit_dlini < -170:
                     coords[0] = float(coords[0])
                     coords[0] -= float(provershit_dlini)
                     pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
                 else:
                     coords[0] = -170
+
             if event.key == 1073741906:
+
                 if not float(coords[1]) + provershit_visoti > 70:
                     coords[1] = float(coords[1])
                     coords[1] += float(provershit_visoti)
                     pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
                 else:
                     coords[1] = 70
+
             if event.key == 1073741905:
+
                 if not float(coords[1]) - provershit_visoti < -70:
                     coords[1] = float(coords[1])
                     coords[1] -= float(provershit_visoti)
                     pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
+
             if event.key == 1073741903:
+
                 if not float(coords[0]) + provershit_dlini > 170:
                     coords[0] = float(coords[0])
                     coords[0] += float(provershit_dlini)
                     pg_pic = get_pic(coords, z, ll, 'https://static-maps.yandex.ru/1.x/', pt)
                 else:
                     coords[0] = 170
+
     vivodimiy_text = font.render(''.join(vvodimiy_text), True, 'black')
+
     if not index_provershit:
         pogazivat_index_text = font.render('Показывать Индекс: OFF', True, 'black')
     else:
         pogazivat_index_text = font.render('Показывать Индекс: ON', True, 'black')
+
     sbros_text = font.render('Сброс', True, 'black')
     index_nadpis = font2.render('Индекс: ' + str(adresos), True, 'black')
     screen.blit(pg_pic, (0, 0))
@@ -245,19 +299,21 @@ while running:
         screen.blit(pogazivat_index_text, (370, 30))
         pygame.draw.rect(screen, 'blue', index_pokazivatel, 1)
         screen.blit(index_nadpis, (78, 45))
-
     else:
         pygame.draw.rect(screen, 'red', index_show)
         screen.blit(pogazivat_index_text, (370, 30))
+
     if len(vvodimiy_text) > 10:
         vvedenie[2] = (140 / 10) * len(vvodimiy_text)
+
     if vvedenie_chek == False:
         pygame.draw.rect(screen, 'blue', vvedenie, 2)
     else:
         pygame.draw.rect(screen, 'black', vvedenie, 2)
+
     if sbros_provershit:
         pygame.draw.rect(screen, 'yellow', sbros)
         screen.blit(sbros_text, (0, 34))
-
     pygame.display.flip()
+
 pygame.quit()
